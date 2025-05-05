@@ -4,18 +4,37 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-interface ChildHeaderProps {
-  childName?: string;
+interface ChildDevice {
+  id: string;
+  device_id: string;
+  device_name: string;
+  device_type: string;
+  os_type: string;
+  last_active: string | null;
+  is_active: boolean;
+  children: {
+    id: string;
+    name: string;
+    age: number | null;
+    [key: string]: any;
+  };
+  [key: string]: any;
 }
 
-export function ChildHeader({ childName = "there" }: ChildHeaderProps) {
+interface ChildHeaderProps {
+  childName?: string;
+  deviceData?: ChildDevice;
+}
+
+export function ChildHeader({
+  childName = "there",
+  deviceData,
+}: ChildHeaderProps) {
   const router = useRouter();
 
   const handleLogout = () => {
-    // Remove local storage items
-    localStorage.removeItem("childId");
-    localStorage.removeItem("deviceId");
-    localStorage.removeItem("childName");
+    // Remove device data from localStorage
+    localStorage.removeItem("childDeviceData");
     router.push("/child-login");
   };
 
@@ -24,7 +43,9 @@ export function ChildHeader({ childName = "there" }: ChildHeaderProps) {
       <div>
         <h1 className="text-3xl font-bold">Hello, {childName}!</h1>
         <p className="text-muted-foreground">
-          Here's your screen time for today
+          {deviceData?.device_name
+            ? `Connected from ${deviceData.device_name}`
+            : "Here's your screen time for today"}
         </p>
       </div>
       <Button variant="outline" size="sm" onClick={handleLogout}>

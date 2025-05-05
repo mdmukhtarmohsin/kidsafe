@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase-client";
-import type { Tables } from "@/lib/supabase-types";
+import type { Tables, TablesInsert } from "@/lib/supabase-types";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Alert as UiAlert,
@@ -28,10 +28,46 @@ import {
   School,
   Terminal,
   User,
+  PlusCircle,
+  Smartphone,
+  Tablet,
+  Laptop,
+  Trash2,
+  Copy,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { v4 as uuidv4 } from "uuid";
 
 interface ChildProfileProps {
   id: string;
@@ -40,12 +76,36 @@ interface ChildProfileProps {
 type Child = Tables<"children">;
 type Device = Tables<"devices">;
 
+// Device schema for form validation
+const deviceSchema = z.object({
+  device_name: z.string().min(1, { message: "Device name is required." }),
+  device_type: z.enum(["phone", "tablet", "computer"], {
+    required_error: "Device type is required.",
+  }),
+  os_type: z.enum(["android", "ios", "windows", "macos"], {
+    required_error: "Operating system is required.",
+  }),
+});
+
 export function ChildProfile({ id }: ChildProfileProps) {
   const [child, setChild] = useState<Child | null>(null);
   const [devices, setDevices] = useState<Device[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAddingDevice, setIsAddingDevice] = useState(false);
+  const [isSubmittingDevice, setIsSubmittingDevice] = useState(false);
+  const { toast } = useToast();
+
+  // Device form
+  const deviceForm = useForm<z.infer<typeof deviceSchema>>({
+    resolver: zodResolver(deviceSchema),
+    defaultValues: {
+      device_name: "",
+      device_type: "phone",
+      os_type: "android",
+    },
+  });
 
   // Fetch child data
   useEffect(() => {
@@ -86,6 +146,112 @@ export function ChildProfile({ id }: ChildProfileProps) {
       fetchChildData();
     }
   }, [id]);
+
+  // Reset device form when dialog closes
+  useEffect(() => {
+    if (!isAddingDevice) {
+      deviceForm.reset();
+      setIsSubmittingDevice(false);
+    }
+  }, [isAddingDevice, deviceForm]);
+
+  // Add device handler
+  const handleAddDevice = async (values: z.infer<typeof deviceSchema>) => {
+    if (!child) return;
+
+    setIsSubmittingDevice(true);
+    try {
+      // Generate a unique device ID - this will be used for child login
+      const deviceId = `${values.device_type}-${uuidv4().substring(0, 8)}`;
+
+      const deviceData: TablesInsert<"devices"> = {
+        child_id: id,
+        device_id: deviceId,
+        device_name: values.device_name,
+        device_type: values.device_type,
+        os_type: values.os_type,
+        is_active: false,
+      };
+
+      const { data, error: insertError } = await supabase
+        .from("devices")
+        .insert(deviceData)
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      // Update local state
+      setDevices([...devices, data]);
+      setIsAddingDevice(false);
+
+      toast({
+        title: "Device Added",
+        description: `${values.device_name} has been added successfully. Device ID: ${deviceId}`,
+      });
+    } catch (err: any) {
+      console.error("Error adding device:", err);
+      toast({
+        title: "Failed to Add Device",
+        description:
+          err.message || "An error occurred while adding the device.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingDevice(false);
+    }
+  };
+
+  // Copy device ID to clipboard
+  const copyDeviceId = (deviceId: string) => {
+    navigator.clipboard.writeText(deviceId);
+    toast({
+      title: "Copied",
+      description: "Device ID copied to clipboard",
+    });
+  };
+
+  // Delete device
+  const deleteDevice = async (deviceId: string) => {
+    try {
+      const { error } = await supabase
+        .from("devices")
+        .delete()
+        .eq("id", deviceId);
+
+      if (error) throw error;
+
+      // Update local state
+      setDevices(devices.filter((device) => device.id !== deviceId));
+
+      toast({
+        title: "Device Removed",
+        description: "The device has been removed successfully.",
+      });
+    } catch (err: any) {
+      console.error("Error removing device:", err);
+      toast({
+        title: "Failed to Remove Device",
+        description:
+          err.message || "An error occurred while removing the device.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Get device icon based on type
+  const getDeviceIcon = (deviceType: string) => {
+    switch (deviceType) {
+      case "phone":
+        return <Smartphone className="h-4 w-4" />;
+      case "tablet":
+        return <Tablet className="h-4 w-4" />;
+      case "computer":
+        return <Laptop className="h-4 w-4" />;
+      default:
+        return <Smartphone className="h-4 w-4" />;
+    }
+  };
 
   // Render Loading State
   if (isLoading) {
@@ -280,41 +446,227 @@ export function ChildProfile({ id }: ChildProfileProps) {
           </div>
         )}
 
-        {devices.length > 0 && (
-          <>
-            <Separator />
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold">
-                Devices ({devices.length})
-              </h4>
-              <div className="space-y-2">
-                {devices.map((device) => (
-                  <div
-                    key={device.id}
-                    className="flex items-center justify-between rounded-md border p-2"
+        <Separator />
+
+        {/* Devices Section */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <Phone className="h-4 w-4 text-blue-500" />
+              Devices ({devices.length})
+            </h4>
+
+            {/* Add Device Dialog */}
+            <Dialog open={isAddingDevice} onOpenChange={setIsAddingDevice}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-1.5">
+                  <PlusCircle className="h-4 w-4" />
+                  Add Device
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Device</DialogTitle>
+                  <DialogDescription>
+                    Add a device for {child.name} to use with their account.
+                    They will use the Device ID and PIN to log in.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Form {...deviceForm}>
+                  <form
+                    onSubmit={deviceForm.handleSubmit(handleAddDevice)}
+                    className="space-y-4 py-4"
                   >
+                    <FormField
+                      control={deviceForm.control}
+                      name="device_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Device Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Emma's iPad" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            A name to identify this device
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={deviceForm.control}
+                      name="device_type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Device Type</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select device type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="phone">Phone</SelectItem>
+                              <SelectItem value="tablet">Tablet</SelectItem>
+                              <SelectItem value="computer">Computer</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={deviceForm.control}
+                      name="os_type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Operating System</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select OS" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="android">Android</SelectItem>
+                              <SelectItem value="ios">iOS</SelectItem>
+                              <SelectItem value="windows">Windows</SelectItem>
+                              <SelectItem value="macos">macOS</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsAddingDevice(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={isSubmittingDevice}>
+                        {isSubmittingDevice ? "Adding..." : "Add Device"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {devices.length === 0 ? (
+            <div className="text-center p-8 border rounded-md bg-gray-50 shadow-sm">
+              <div className="bg-blue-50 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                <Phone className="h-6 w-6 text-blue-500" />
+              </div>
+              <h3 className="text-sm font-medium mb-2">No Devices Added</h3>
+              <p className="text-xs text-muted-foreground mb-4 max-w-xs mx-auto">
+                Add a device for {child.name} to use for logging in and tracking
+                activity. Each device needs a unique ID to connect.
+              </p>
+              <Button
+                size="sm"
+                variant="default"
+                onClick={() => setIsAddingDevice(true)}
+                className="gap-1.5"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Add First Device
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-1">
+              {devices.map((device) => (
+                <div
+                  key={device.id}
+                  className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow transition-shadow"
+                >
+                  <div className="flex items-center justify-between p-3 border-b bg-gray-50">
                     <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          device.is_active ? "bg-green-500" : "bg-gray-400"
-                        }`}
-                      ></div>
-                      <span className="font-medium">{device.device_name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {device.device_type} • {device.os_type}
-                      </span>
+                      <div className="bg-blue-50 rounded-full p-1.5">
+                        {getDeviceIcon(device.device_type)}
+                      </div>
+                      <div>
+                        <div className="font-medium flex items-center gap-1.5">
+                          {device.device_name}
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              device.is_active ? "bg-green-500" : "bg-gray-400"
+                            }`}
+                          ></div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {device.is_active ? "Online" : "Offline"}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {device.last_active
-                        ? format(new Date(device.last_active), "Pp")
-                        : "Never used"}
+
+                    <Badge variant="outline" className="text-xs capitalize">
+                      {device.os_type}
+                    </Badge>
+                  </div>
+
+                  <div className="p-3">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm text-muted-foreground">
+                            Device ID:
+                          </div>
+                          <div className="flex items-center">
+                            <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
+                              {device.device_id}
+                            </code>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 ml-1"
+                              onClick={() => copyDeviceId(device.device_id)}
+                              title="Copy device ID"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600"
+                          onClick={() => deleteDevice(device.id)}
+                          title="Remove device"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="text-xs text-muted-foreground">
+                        {device.last_active
+                          ? `Last used: ${format(
+                              new Date(device.last_active),
+                              "PPp"
+                            )}`
+                          : "Never used"}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          </>
-        )}
+          )}
+        </div>
       </CardContent>
     </Card>
   );

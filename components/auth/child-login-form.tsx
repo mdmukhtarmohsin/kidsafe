@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -53,7 +52,7 @@ export function ChildLoginForm() {
     const { deviceId, pin } = values;
 
     try {
-      // First, find the device by device_id
+      // Find the device by device_id
       const { data: deviceData, error: deviceError } = await supabase
         .from("devices")
         .select("*, children(*)")
@@ -64,8 +63,9 @@ export function ChildLoginForm() {
         throw new Error("Device not found. Please check your Device ID.");
       }
 
-      // Now check if the PIN matches the child's PIN
-      if (!deviceData.children || deviceData.children.pin !== pin) {
+      // Check if the PIN matches or if the child doesn't have a PIN
+      const childPin = deviceData.children?.pin;
+      if (childPin && childPin !== pin) {
         throw new Error("Invalid PIN. Please try again.");
       }
 
@@ -82,10 +82,8 @@ export function ChildLoginForm() {
         console.error("Error updating device status:", updateError);
       }
 
-      // Store child session info in localStorage for the child dashboard
-      localStorage.setItem("childId", deviceData.children.id);
-      localStorage.setItem("deviceId", deviceData.id);
-      localStorage.setItem("childName", deviceData.children.name);
+      // Store complete device and child data in localStorage for the dashboard
+      localStorage.setItem("childDeviceData", JSON.stringify(deviceData));
 
       // Success message and redirect
       toast({

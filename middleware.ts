@@ -34,11 +34,11 @@ export async function middleware(request: NextRequest) {
     `[Middleware] isAuthRoute: ${isAuthRoute}, isPublicRoute: ${isPublicRoute}, isChildRoute: ${isChildRoute}`
   );
 
-  // For child routes, we don't need to check the Supabase session
-  // The components will check localStorage for child session info
+  // For child routes, allow access - the component will verify localStorage data
+  // The middleware cannot check localStorage since it runs on the server
   if (isChildRoute) {
     console.log(
-      "[Middleware] Child route - allowing access to be checked by component"
+      "[Middleware] Child route - allowing access to be checked by client component"
     );
     return response;
   }
@@ -56,10 +56,6 @@ export async function middleware(request: NextRequest) {
     );
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
-
-  // If user is not logged in and accessing the root path, redirect to login
-  // This condition is now covered by the !session && !isPublicRoute check above
-  // as '/' is no longer in publicRoutes.
 
   console.log("[Middleware] Allowing request to proceed."); // Log allowing the request
   return response; // Continue processing the request

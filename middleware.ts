@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Define public routes that don't require authentication
-  const publicRoutes = ["/login", "/signup", "/child-login"]; // Root '/' is now protected
+  const publicRoutes = ["/login", "/signup", "/child-login", "/"]; // Root '/' is now protected
 
   // Check if this is a child route - these use localStorage instead of Supabase auth
   const isChildRoute = ["/child-dashboard"].includes(request.nextUrl.pathname);

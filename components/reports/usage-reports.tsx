@@ -1,7 +1,13 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Area,
   AreaChart,
@@ -18,49 +24,51 @@ import {
   XAxis,
   YAxis,
   Cell,
-} from "recharts"
+} from "recharts";
+import { useReports } from "./reports-context";
+import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 export function UsageReports() {
-  // Mock data for usage reports
-  const weeklyData = [
-    { name: "Mon", Emma: 120, Noah: 90 },
-    { name: "Tue", Emma: 150, Noah: 100 },
-    { name: "Wed", Emma: 180, Noah: 120 },
-    { name: "Thu", Emma: 140, Noah: 80 },
-    { name: "Fri", Emma: 160, Noah: 110 },
-    { name: "Sat", Emma: 200, Noah: 150 },
-    { name: "Sun", Emma: 190, Noah: 130 },
-  ]
+  const { usageData, isLoading, error, selectedChildId, startDate, endDate } =
+    useReports();
+  const { hourlyData, appUsageData, weeklyData, monthlyData } = usageData;
 
-  const appUsageData = [
-    { name: "Chrome", value: 35 },
-    { name: "YouTube", value: 25 },
-    { name: "Minecraft", value: 20 },
-    { name: "Educational Apps", value: 15 },
-    { name: "Other", value: 5 },
-  ]
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
-  const hourlyData = [
-    { name: "8AM", usage: 10 },
-    { name: "9AM", usage: 15 },
-    { name: "10AM", usage: 20 },
-    { name: "11AM", usage: 25 },
-    { name: "12PM", usage: 30 },
-    { name: "1PM", usage: 35 },
-    { name: "2PM", usage: 40 },
-    { name: "3PM", usage: 45 },
-    { name: "4PM", usage: 50 },
-    { name: "5PM", usage: 55 },
-    { name: "6PM", usage: 60 },
-    { name: "7PM", usage: 50 },
-    { name: "8PM", usage: 40 },
-    { name: "9PM", usage: 20 },
-  ]
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-[400px] w-full" />
+      </div>
+    );
+  }
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"]
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Error loading report data</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  const dateRangeText = `${format(startDate, "MMM d, yyyy")} - ${format(
+    endDate,
+    "MMM d, yyyy"
+  )}`;
 
   return (
     <div className="space-y-6">
+      <div className="text-sm text-muted-foreground mb-2">
+        Showing data for{" "}
+        {selectedChildId === "all" ? "all children" : "selected child"} from{" "}
+        {dateRangeText}
+      </div>
+
       <Tabs defaultValue="daily">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="daily">Daily</TabsTrigger>
@@ -72,23 +80,47 @@ export function UsageReports() {
             <Card>
               <CardHeader>
                 <CardTitle>Hourly Usage</CardTitle>
-                <CardDescription>Screen time by hour of the day</CardDescription>
+                <CardDescription>
+                  Screen time by hour of the day
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={hourlyData}>
                       <defs>
-                        <linearGradient id="colorUsage" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                          <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                        <linearGradient
+                          id="colorUsage"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#8884d8"
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#8884d8"
+                            stopOpacity={0}
+                          />
                         </linearGradient>
                       </defs>
                       <XAxis dataKey="name" />
                       <YAxis />
                       <CartesianGrid strokeDasharray="3 3" />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="usage" stroke="#8884d8" fillOpacity={1} fill="url(#colorUsage)" />
+                      <Tooltip
+                        formatter={(value) => [`${value} minutes`, "Usage"]}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="usage"
+                        stroke="#8884d8"
+                        fillOpacity={1}
+                        fill="url(#colorUsage)"
+                      />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -113,10 +145,15 @@ export function UsageReports() {
                         dataKey="value"
                       >
                         {appUsageData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip
+                        formatter={(value) => [`${value} minutes`, "Usage"]}
+                      />
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
@@ -138,10 +175,19 @@ export function UsageReports() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip
+                      formatter={(value) => [`${value} minutes`, "Usage"]}
+                    />
                     <Legend />
-                    <Bar dataKey="Emma" fill="#8884d8" />
-                    <Bar dataKey="Noah" fill="#82ca9d" />
+                    {Object.keys(weeklyData[0])
+                      .filter((key) => key !== "name")
+                      .map((childName, index) => (
+                        <Bar
+                          key={childName}
+                          dataKey={childName}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -152,19 +198,32 @@ export function UsageReports() {
           <Card>
             <CardHeader>
               <CardTitle>Monthly Trends</CardTitle>
-              <CardDescription>Screen time trends over the past month</CardDescription>
+              <CardDescription>
+                Screen time trends over the past month
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={weeklyData}>
+                  <LineChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip
+                      formatter={(value) => [`${value} minutes`, "Usage"]}
+                    />
                     <Legend />
-                    <Line type="monotone" dataKey="Emma" stroke="#8884d8" activeDot={{ r: 8 }} />
-                    <Line type="monotone" dataKey="Noah" stroke="#82ca9d" />
+                    {Object.keys(monthlyData[0])
+                      .filter((key) => key !== "name")
+                      .map((childName, index) => (
+                        <Line
+                          key={childName}
+                          type="monotone"
+                          dataKey={childName}
+                          stroke={COLORS[index % COLORS.length]}
+                          activeDot={{ r: 8 }}
+                        />
+                      ))}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -173,5 +232,5 @@ export function UsageReports() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

@@ -152,7 +152,10 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <SidebarTrigger />
+              <div className="flex items-center justify-start gap-2">
+                <SidebarTrigger />
+                {/* <span>Toggle Sidebar</span> */}
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

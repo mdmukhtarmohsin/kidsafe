@@ -81,7 +81,9 @@ export function GenerateDataButton() {
         description: `Successfully created random profile for ${name}.`,
         variant: "default",
       });
-      router.refresh(); // Refresh the children list
+
+      // Add a timestamp to the refresh parameter to make it unique each time
+      router.push(`?refresh=${Date.now()}`);
     } catch (error: any) {
       console.error("Generate Data Error:", error);
       toast({

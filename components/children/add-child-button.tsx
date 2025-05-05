@@ -137,7 +137,9 @@ export function AddChildButton() {
         variant: "default",
       });
       setOpen(false); // Close modal on success
-      router.refresh(); // Refresh server components on the page where the button resides
+
+      // Add a timestamp to the refresh parameter to make it unique each time
+      router.push(`?refresh=${Date.now()}`);
     } catch (error: any) {
       console.error("Add Child Error:", error);
       toast({

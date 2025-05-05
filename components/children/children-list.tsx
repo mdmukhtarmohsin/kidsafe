@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/alert";
 import { Terminal } from "lucide-react";
 import { formatDistanceToNowStrict } from "date-fns";
+import { useSearchParams } from "next/navigation";
 
 type Child = Tables<"children">;
 
@@ -185,6 +186,10 @@ export function ChildrenList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usingMockData, setUsingMockData] = useState(false);
+  const searchParams = useSearchParams();
+
+  // Get the refresh parameter to trigger refetches
+  const refreshTrigger = searchParams.get("refresh");
 
   useEffect(() => {
     const fetchChildren = async () => {
@@ -238,7 +243,7 @@ export function ChildrenList() {
     };
 
     fetchChildren();
-  }, []);
+  }, [refreshTrigger]); // Add refreshTrigger to the dependency array
 
   const formatLastActive = (timestamp: string | null) => {
     if (!timestamp) return "Never";

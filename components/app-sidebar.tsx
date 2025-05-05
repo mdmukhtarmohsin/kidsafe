@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   BarChart3,
@@ -11,6 +11,7 @@ import {
   Settings,
   Users,
 } from "lucide-react";
+import { supabase } from "@/lib/supabase-client";
 
 import {
   Sidebar,
@@ -27,6 +28,15 @@ import { Logo } from "@/components/logo";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error logging out:", error.message);
+    }
+    router.push("/login");
+  };
 
   // Skip sidebar for auth pages
   if (
@@ -42,10 +52,12 @@ export function AppSidebar() {
     return (
       <Sidebar>
         <SidebarHeader className="flex items-center px-4 py-2">
-          <Logo className="h-8 w-8 mr-2" />
-          <span className="text-xl font-bold">KidSafe</span>
+          <Logo className="h-8 w-8" />
+          <span className="text-xl font-bold group-data-[collapsible=icon]:hidden">
+            KidSafe
+          </span>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="pl-2">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={true}>
@@ -60,11 +72,11 @@ export function AppSidebar() {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href="/login">
+              <SidebarMenuButton asChild onClick={handleLogout}>
+                <button>
                   <LogOut />
                   <span>Log Out</span>
-                </Link>
+                </button>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -144,11 +156,11 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link href="/login">
+            <SidebarMenuButton asChild onClick={handleLogout}>
+              <button>
                 <LogOut />
                 <span>Log Out</span>
-              </Link>
+              </button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

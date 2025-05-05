@@ -178,6 +178,24 @@ const generateMockData = (child: Child): [Child, MockActivityData] => {
   return [updatedChild, activityData];
 };
 
+// Client component that uses useSearchParams
+function ChildrenListWithRefresh({
+  onRefreshChange,
+}: {
+  onRefreshChange: (refresh: string | null) => void;
+}) {
+  const searchParams = useSearchParams();
+
+  // Get the refresh parameter to trigger refetches
+  const refreshTrigger = searchParams.get("refresh");
+
+  useEffect(() => {
+    onRefreshChange(refreshTrigger);
+  }, [refreshTrigger, onRefreshChange]);
+
+  return null;
+}
+
 export function ChildrenList() {
   const [children, setChildren] = useState<Child[]>([]);
   const [activityData, setActivityData] = useState<{
@@ -186,10 +204,7 @@ export function ChildrenList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usingMockData, setUsingMockData] = useState(false);
-  const searchParams = useSearchParams();
-
-  // Get the refresh parameter to trigger refetches
-  const refreshTrigger = searchParams.get("refresh");
+  const [refreshTrigger, setRefreshTrigger] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchChildren = async () => {
@@ -243,7 +258,7 @@ export function ChildrenList() {
     };
 
     fetchChildren();
-  }, [refreshTrigger]); // Add refreshTrigger to the dependency array
+  }, [refreshTrigger]); // Use the state variable refreshTrigger
 
   const formatLastActive = (timestamp: string | null) => {
     if (!timestamp) return "Never";
@@ -313,164 +328,167 @@ export function ChildrenList() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {children.map((child) => {
-        const childActivity = activityData[child.id];
-        const timePercent =
-          child.daily_limit > 0
-            ? (child.time_used / child.daily_limit) * 100
-            : 0;
+    <>
+      <ChildrenListWithRefresh onRefreshChange={setRefreshTrigger} />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {children.map((child) => {
+          const childActivity = activityData[child.id];
+          const timePercent =
+            child.daily_limit > 0
+              ? (child.time_used / child.daily_limit) * 100
+              : 0;
 
-        // Colors based on time usage
-        const progressColor =
-          timePercent > 85
-            ? "bg-red-500"
-            : timePercent > 65
-            ? "bg-amber-500"
-            : "bg-green-500";
+          // Colors based on time usage
+          const progressColor =
+            timePercent > 85
+              ? "bg-red-500"
+              : timePercent > 65
+              ? "bg-amber-500"
+              : "bg-green-500";
 
-        return (
-          <Card
-            key={child.id}
-            className={
-              child.status === "locked"
-                ? "border-red-200"
-                : child.status === "active"
-                ? "border-green-200"
-                : ""
-            }
-          >
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Avatar>
-                    {child.avatar_url && (
-                      <AvatarImage src={child.avatar_url} alt={child.name} />
-                    )}
-                    <AvatarFallback
-                      className={
-                        child.status === "active"
-                          ? "bg-green-100 text-green-800"
-                          : child.status === "locked"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-gray-100"
-                      }
-                    >
-                      {child.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle>{child.name}</CardTitle>
-                    {child.age && (
-                      <CardDescription>{child.age} years old</CardDescription>
-                    )}
-                  </div>
-                </div>
-                <Button variant="ghost" size="icon" asChild>
-                  <Link href={`/children/${child.id}`}>
-                    <Settings className="h-4 w-4" />
-                    <span className="sr-only">Settings</span>
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+          return (
+            <Card
+              key={child.id}
+              className={
+                child.status === "locked"
+                  ? "border-red-200"
+                  : child.status === "active"
+                  ? "border-green-200"
+                  : ""
+              }
+            >
+              <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>Screen Time</span>
+                  <div className="flex items-center gap-2">
+                    <Avatar>
+                      {child.avatar_url && (
+                        <AvatarImage src={child.avatar_url} alt={child.name} />
+                      )}
+                      <AvatarFallback
+                        className={
+                          child.status === "active"
+                            ? "bg-green-100 text-green-800"
+                            : child.status === "locked"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100"
+                        }
+                      >
+                        {child.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <CardTitle>{child.name}</CardTitle>
+                      {child.age && (
+                        <CardDescription>{child.age} years old</CardDescription>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-sm font-medium">
-                    {Math.floor(child.time_used / 60)}h {child.time_used % 60}m
-                    /{Math.floor(child.daily_limit / 60)}h{" "}
-                    {child.daily_limit % 60}m
-                  </span>
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link href={`/children/${child.id}`}>
+                      <Settings className="h-4 w-4" />
+                      <span className="sr-only">Settings</span>
+                    </Link>
+                  </Button>
                 </div>
-                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${progressColor} transition-all`}
-                    style={{ width: `${timePercent}%` }}
-                  />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span>Screen Time</span>
+                    </div>
+                    <span className="text-sm font-medium">
+                      {Math.floor(child.time_used / 60)}h {child.time_used % 60}
+                      m /{Math.floor(child.daily_limit / 60)}h{" "}
+                      {child.daily_limit % 60}m
+                    </span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${progressColor} transition-all`}
+                      style={{ width: `${timePercent}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Status and device info */}
-              <div className="flex justify-between text-sm">
-                <div className="text-left">
-                  <div
-                    className={`font-medium flex items-center gap-1 ${
-                      child.status === "active"
-                        ? "text-green-600"
-                        : child.status === "locked"
-                        ? "text-red-600"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {child.status === "active" ? (
-                      childActivity ? (
-                        getDeviceIcon(childActivity.deviceType)
+                {/* Status and device info */}
+                <div className="flex justify-between text-sm">
+                  <div className="text-left">
+                    <div
+                      className={`font-medium flex items-center gap-1 ${
+                        child.status === "active"
+                          ? "text-green-600"
+                          : child.status === "locked"
+                          ? "text-red-600"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {child.status === "active" ? (
+                        childActivity ? (
+                          getDeviceIcon(childActivity.deviceType)
+                        ) : (
+                          <Laptop className="h-4 w-4" />
+                        )
+                      ) : child.status === "locked" ? (
+                        <ShieldAlert className="h-4 w-4" />
                       ) : (
-                        <Laptop className="h-4 w-4" />
-                      )
-                    ) : child.status === "locked" ? (
-                      <ShieldAlert className="h-4 w-4" />
-                    ) : (
-                      <WifiOff className="h-4 w-4" />
-                    )}
-                    {child.status
-                      ? child.status.charAt(0).toUpperCase() +
-                        child.status.slice(1)
-                      : "Offline"}
+                        <WifiOff className="h-4 w-4" />
+                      )}
+                      {child.status
+                        ? child.status.charAt(0).toUpperCase() +
+                          child.status.slice(1)
+                        : "Offline"}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {child.status === "active" && childActivity
+                        ? `Using ${childActivity.appName}`
+                        : child.last_active
+                        ? formatLastActive(child.last_active)
+                        : "-"}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {child.status === "active" && childActivity
-                      ? `Using ${childActivity.appName}`
-                      : child.last_active
-                      ? formatLastActive(child.last_active)
-                      : "-"}
-                  </div>
+
+                  {/* Additional activity data */}
+                  {childActivity && childActivity.blockedAttempts > 0 && (
+                    <div className="bg-red-50 text-red-700 rounded-md px-2 py-1 text-xs flex items-center">
+                      <ShieldAlert className="h-3 w-3 mr-1" />
+                      {childActivity.blockedAttempts} blocked
+                    </div>
+                  )}
                 </div>
 
-                {/* Additional activity data */}
-                {childActivity && childActivity.blockedAttempts > 0 && (
-                  <div className="bg-red-50 text-red-700 rounded-md px-2 py-1 text-xs flex items-center">
-                    <ShieldAlert className="h-3 w-3 mr-1" />
-                    {childActivity.blockedAttempts} blocked
+                {/* Top apps display */}
+                {childActivity && childActivity.topApps.length > 0 && (
+                  <div className="border-t pt-3">
+                    <div className="text-xs text-muted-foreground mb-2">
+                      Top activity
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {childActivity.topApps.map((app, index) => (
+                        <div
+                          key={index}
+                          className={`text-xs rounded-full px-2 py-0.5 flex items-center gap-1 ${getCategoryColor(
+                            app.category
+                          )}`}
+                        >
+                          {getAppIcon(app.category)}
+                          {app.name}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </div>
-
-              {/* Top apps display */}
-              {childActivity && childActivity.topApps.length > 0 && (
-                <div className="border-t pt-3">
-                  <div className="text-xs text-muted-foreground mb-2">
-                    Top activity
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {childActivity.topApps.map((app, index) => (
-                      <div
-                        key={index}
-                        className={`text-xs rounded-full px-2 py-0.5 flex items-center gap-1 ${getCategoryColor(
-                          app.category
-                        )}`}
-                      >
-                        {getAppIcon(app.category)}
-                        {app.name}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full" asChild>
-                <Link href={`/children/${child.id}`}>Manage Profile</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        );
-      })}
-    </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href={`/children/${child.id}`}>Manage Profile</Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
+      </div>
+    </>
   );
 }

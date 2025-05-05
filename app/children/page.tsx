@@ -2,6 +2,7 @@ import { ChildrenHeader } from "@/components/children/children-header";
 import { ChildrenList } from "@/components/children/children-list";
 import { AddChildButton } from "@/components/children/add-child-button";
 import { GenerateDataButton } from "@/components/children/generate-data-button";
+import { Suspense } from "react";
 
 export default function ChildrenPage() {
   return (
@@ -14,7 +15,13 @@ export default function ChildrenPage() {
           <AddChildButton />
         </div>
       </div>
-      <ChildrenList />
+      <Suspense
+        fallback={
+          <div className="text-center p-4">Loading children profiles...</div>
+        }
+      >
+        <ChildrenList />
+      </Suspense>
     </div>
   );
 }

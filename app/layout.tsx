@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { RouteBody } from "@/components/route-body";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -42,6 +43,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SidebarProvider>{children}</SidebarProvider>
+          <Toaster />
         </ThemeProvider>
       </RouteBody>
     </html>

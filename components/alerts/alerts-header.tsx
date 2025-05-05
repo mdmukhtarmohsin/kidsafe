@@ -48,7 +48,7 @@ export function AlertsHeader() {
         </p>
       </div>
       <div className="flex gap-2">
-        {isLoading ? (
+        {/* {isLoading ? (
           <Skeleton className="h-10 w-[140px]" />
         ) : unreadCount > 0 ? (
           <Button
@@ -60,7 +60,7 @@ export function AlertsHeader() {
             <CheckCircle className="mr-2 h-4 w-4" />
             {isMarking ? "Marking..." : "Mark all as read"}
           </Button>
-        ) : null}
+        ) : null} */}
       </div>
     </div>
   );

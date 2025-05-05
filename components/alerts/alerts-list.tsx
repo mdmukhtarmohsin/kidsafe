@@ -161,7 +161,7 @@ export function AlertsList() {
                         {alert.message}
                       </p>
                       {alert.urgent && (
-                        <Badge variant="destructive" className="ml-2">
+                        <Badge variant="destructive" className="ml-2 h-fit">
                           Urgent
                         </Badge>
                       )}

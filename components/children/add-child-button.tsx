@@ -136,10 +136,15 @@ export function AddChildButton() {
         description: `${values.name} has been added (with mock data).`,
         variant: "default",
       });
-      setOpen(false); // Close modal on success
 
-      // Add a timestamp to the refresh parameter to make it unique each time
-      router.push(`?refresh=${Date.now()}`);
+      // First close the modal
+      setOpen(false);
+
+      // Wait a brief moment to ensure modal is fully closed before navigation
+      setTimeout(() => {
+        // Then refresh the page
+        router.push(`?refresh=${Date.now()}`);
+      }, 500);
     } catch (error: any) {
       console.error("Add Child Error:", error);
       toast({

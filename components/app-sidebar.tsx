@@ -1,8 +1,16 @@
-"use client"
+"use client";
 
-import { usePathname } from "next/navigation"
-import Link from "next/link"
-import { BarChart3, Bell, Clock, Home, LogOut, Settings, Users } from "lucide-react"
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import {
+  BarChart3,
+  Bell,
+  Clock,
+  Home,
+  LogOut,
+  Settings,
+  Users,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -13,15 +21,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
-} from "@/components/ui/sidebar"
-import { Logo } from "@/components/logo"
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Logo } from "@/components/logo";
 
 export function AppSidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   // Skip sidebar for auth pages
-  if (pathname === "/login" || pathname === "/signup" || pathname === "/child-login") {
-    return null
+  if (
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/child-login"
+  ) {
+    return null;
   }
 
   // Show simplified sidebar for child dashboard
@@ -57,20 +70,26 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-    )
+    );
   }
 
   // Full sidebar for parent dashboard
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader className="flex items-center px-4 py-2">
-        <Logo className="h-8 w-8 mr-2" />
-        <span className="text-xl font-bold">KidSafe</span>
+        <Logo className="h-8 w-8" />
+        <span className="text-xl font-bold group-data-[collapsible=icon]:hidden">
+          KidSafe
+        </span>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="pl-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname === "/dashboard"}>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname === "/dashboard"}
+              className="px-2"
+            >
               <Link href="/dashboard">
                 <Home />
                 <span>Dashboard</span>
@@ -78,7 +97,10 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname.startsWith("/children")}>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname.startsWith("/children")}
+            >
               <Link href="/children">
                 <Users />
                 <span>Children</span>
@@ -118,6 +140,11 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
+              <SidebarTrigger />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
               <Link href="/login">
                 <LogOut />
                 <span>Log Out</span>
@@ -127,5 +154,5 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

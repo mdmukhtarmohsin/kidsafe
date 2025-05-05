@@ -1,13 +1,24 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Clock } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Clock } from "lucide-react";
 
-export function TimeRemaining() {
-  // Mock data for time remaining
-  const timeUsed = 120 // minutes
-  const dailyLimit = 180 // minutes
-  const timeRemaining = dailyLimit - timeUsed
-  const percentageUsed = (timeUsed / dailyLimit) * 100
+interface TimeRemainingProps {
+  timeUsed?: number; // minutes
+  dailyLimit?: number; // minutes
+}
+
+export function TimeRemaining({
+  timeUsed = 0,
+  dailyLimit = 180,
+}: TimeRemainingProps) {
+  const timeRemaining = Math.max(0, dailyLimit - timeUsed);
+  const percentageUsed = Math.min(100, (timeUsed / dailyLimit) * 100 || 0);
 
   return (
     <Card>
@@ -17,14 +28,16 @@ export function TimeRemaining() {
           Time Remaining Today
         </CardTitle>
         <CardDescription>
-          You have used {Math.floor(timeUsed / 60)}h {timeUsed % 60}m of your daily limit
+          You have used {Math.floor(timeUsed / 60)}h {timeUsed % 60}m of your
+          daily limit
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-center">
           <div className="text-center">
             <div className="text-5xl font-bold">
-              {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, "0")}
+              {Math.floor(timeRemaining / 60)}:
+              {(timeRemaining % 60).toString().padStart(2, "0")}
             </div>
             <div className="text-sm text-muted-foreground">hours remaining</div>
           </div>
@@ -38,5 +51,5 @@ export function TimeRemaining() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

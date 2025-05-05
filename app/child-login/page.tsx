@@ -1,9 +1,9 @@
-import { ChildLoginForm } from "@/components/auth/child-login-form"
-import { Logo } from "@/components/logo"
+import { ChildLoginForm } from "@/components/auth/child-login-form";
+import { Logo } from "@/components/logo";
 
 export default function ChildLoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center p-4 w-full">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center space-y-2">
           <Logo className="h-12 w-12" />
@@ -13,5 +13,5 @@ export default function ChildLoginPage() {
         <ChildLoginForm />
       </div>
     </div>
-  )
+  );
 }

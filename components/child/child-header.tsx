@@ -3,23 +3,26 @@
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase-client";
 
-export function ChildHeader() {
+interface ChildHeaderProps {
+  childName?: string;
+}
+
+export function ChildHeader({ childName = "there" }: ChildHeaderProps) {
   const router = useRouter();
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error logging out:", error.message);
-    }
-    router.push("/login");
+  const handleLogout = () => {
+    // Remove local storage items
+    localStorage.removeItem("childId");
+    localStorage.removeItem("deviceId");
+    localStorage.removeItem("childName");
+    router.push("/child-login");
   };
 
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h1 className="text-3xl font-bold">Hello, Emma!</h1>
+        <h1 className="text-3xl font-bold">Hello, {childName}!</h1>
         <p className="text-muted-foreground">
           Here's your screen time for today
         </p>

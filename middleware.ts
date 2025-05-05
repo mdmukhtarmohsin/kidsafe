@@ -19,15 +19,29 @@ export async function middleware(request: NextRequest) {
   }
 
   // Define public routes that don't require authentication
-  const publicRoutes = ["/login", "/signup"]; // Root '/' is now protected
+  const publicRoutes = ["/login", "/signup", "/child-login"]; // Root '/' is now protected
+
+  // Check if this is a child route - these use localStorage instead of Supabase auth
+  const isChildRoute = ["/child-dashboard"].includes(request.nextUrl.pathname);
 
   const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname);
-  const isAuthRoute = ["/login", "/signup"].includes(request.nextUrl.pathname);
+  const isAuthRoute = ["/login", "/signup", "/child-login"].includes(
+    request.nextUrl.pathname
+  );
 
   // Log decision logic points
   console.log(
-    `[Middleware] isAuthRoute: ${isAuthRoute}, isPublicRoute: ${isPublicRoute}`
+    `[Middleware] isAuthRoute: ${isAuthRoute}, isPublicRoute: ${isPublicRoute}, isChildRoute: ${isChildRoute}`
   );
+
+  // For child routes, we don't need to check the Supabase session
+  // The components will check localStorage for child session info
+  if (isChildRoute) {
+    console.log(
+      "[Middleware] Child route - allowing access to be checked by component"
+    );
+    return response;
+  }
 
   // If user is not logged in and trying to access a protected route
   if (!session && !isPublicRoute) {

@@ -60,7 +60,7 @@ export default function KidSafeLanding() {
               <div className="relative group">
                 <button className="text-sm text-neutralMid hover:text-black flex items-center">
                   Pricing
-                  <ChevronDown className="w-4 h-4 ml-1" />
+                  {/* <ChevronDown className="w-4 h-4 ml-1" /> */}
                 </button>
                 {/* Add dropdown menu here if needed */}
               </div>
@@ -68,14 +68,14 @@ export default function KidSafeLanding() {
 
             <div className="flex items-center space-x-4">
               <Link
-                href="#"
-                className="hidden md:inline-block text-sm text-neutralMid hover:text-black"
+                href="/login"
+                className="hidden md:inline-block bg-black text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors"
               >
                 Sign In
               </Link>
-              <button className="hidden md:inline-block bg-black text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors">
+              {/* <button className="hidden md:inline-block bg-black text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors">
                 Menu
-              </button>
+              </button> */}
               <button
                 className="md:hidden text-black"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -113,14 +113,17 @@ export default function KidSafeLanding() {
                   Pricing
                 </Link>
                 <Link
-                  href="#"
+                  href="/login"
                   className="text-sm text-neutralMid hover:text-black"
                 >
                   Sign In
                 </Link>
-                <button className="w-full bg-black text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors mt-2">
-                  Menu
-                </button>
+                <Link
+                  href="/signup"
+                  className="w-full bg-black text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors mt-2 text-center block"
+                >
+                  Sign Up
+                </Link>
               </div>
             </div>
           )}
@@ -146,9 +149,12 @@ export default function KidSafeLanding() {
                       <button className="bg-black text-white px-7 py-3 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors">
                         Learn More
                       </button>
-                      <button className="border border-black text-black px-7 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors">
+                      <Link
+                        href="/signup"
+                        className="border border-black text-black px-7 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors"
+                      >
                         Sign Up
-                      </button>
+                      </Link>
                     </div>
                   </div>
                   <div className="rounded-2xl overflow-hidden aspect-w-4 aspect-h-3 md:aspect-w-16 md:aspect-h-10">
@@ -327,10 +333,13 @@ export default function KidSafeLanding() {
               <button className="border border-neutralGray text-black px-7 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors">
                 Learn More
               </button>
-              <button className="bg-black text-white px-7 py-3 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors flex items-center">
+              <Link
+                href="/signup"
+                className="bg-black text-white px-7 py-3 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors flex items-center"
+              >
                 Sign Up
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </button>
+              </Link>
             </div>
           </section>
 
@@ -403,10 +412,13 @@ export default function KidSafeLanding() {
                     <button className="border border-black text-black px-7 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors">
                       Learn More
                     </button>
-                    <button className="bg-black text-white px-7 py-3 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors flex items-center">
+                    <Link
+                      href="/signup"
+                      className="bg-black text-white px-7 py-3 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors flex items-center"
+                    >
                       Sign Up
                       <ArrowRight className="w-4 h-4 ml-2" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
                 <div className="rounded-2xl overflow-hidden shadow-lg aspect-w-4 aspect-h-3 md:aspect-w-16 md:aspect-h-10">
@@ -559,9 +571,12 @@ export default function KidSafeLanding() {
                 screen time.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <button className="bg-black text-white px-7 py-3 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors">
+                <Link
+                  href="/signup"
+                  className="bg-black text-white px-7 py-3 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors"
+                >
                   Sign Up
-                </button>
+                </Link>
                 <button className="border border-black text-black px-7 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors">
                   Learn More
                 </button>
@@ -595,7 +610,7 @@ export default function KidSafeLanding() {
                     type="submit"
                     className="bg-black text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-neutralDark transition-colors flex-shrink-0"
                   >
-                    Sign Up
+                    Subscribe
                   </button>
                 </form>
                 <p className="text-xs text-neutralMid mt-3">

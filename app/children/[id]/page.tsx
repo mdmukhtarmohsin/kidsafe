@@ -108,22 +108,22 @@ export default function ChildDetailPage({
         <TabsContent value="dashboard" className="space-y-6">
           {/* Profile and Usage Section */}
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 h-full">
               <div className="flex items-center gap-2 border-b pb-2">
                 <User className="h-5 w-5 text-blue-500" />
                 <h2 className="text-xl font-semibold">Profile Information</h2>
               </div>
-              <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+              <div className="bg-white rounded-lg border shadow-sm overflow-hidden flex-1">
                 <ChildProfile id={params.id} />
               </div>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 h-full">
               <div className="flex items-center gap-2 border-b pb-2">
                 <ActivitySquare className="h-5 w-5 text-green-500" />
                 <h2 className="text-xl font-semibold">Activity & Usage</h2>
               </div>
-              <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+              <div className="bg-white rounded-lg border shadow-sm overflow-hidden flex-1">
                 <UsageStats id={params.id} />
               </div>
             </div>
